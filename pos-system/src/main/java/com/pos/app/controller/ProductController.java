@@ -38,5 +38,13 @@ public class ProductController {
 
     }
 
+    @PutMapping("/{id}")
+    public ProductResponseModel updateProduct(@PathVariable("id") String id ,@RequestBody ProductRequestModel productRequestModel){
+        ProductDto productDto = new ModelMapper().map(productRequestModel,ProductDto.class);
+        ProductDto updatedProduct = productService.updateProduct(id,productDto);
+        ProductResponseModel responseModel = new ModelMapper().map(updatedProduct,ProductResponseModel.class);
+        return responseModel;
+    }
+
 
 }

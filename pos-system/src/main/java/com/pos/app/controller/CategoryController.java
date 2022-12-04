@@ -45,6 +45,4 @@ public class CategoryController {
         return  categoryResponseModels;
     }
 
-
-
 }

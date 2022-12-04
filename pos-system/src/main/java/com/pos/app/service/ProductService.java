@@ -8,4 +8,6 @@ public interface ProductService {
     ProductDto saveProduct(ProductDto productDto);
 
     List<ProductDto> getAllProducts(Long id,String name);
+
+    ProductDto updateProduct(String id, ProductDto productDto);
 }

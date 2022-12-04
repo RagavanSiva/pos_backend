@@ -87,4 +87,20 @@ public class ProductServiceImpl implements ProductService {
         }
         return productDtoList;
     }
+
+    @Override
+    public ProductDto updateProduct(String id, ProductDto productDto) {
+            ProductEntity productEntity = productRepository.findByProductId(id);
+            if (productEntity == null) throw new RuntimeException("No Record Found");
+            productEntity.setName(productDto.getName());
+            productEntity.setDate(productDto.getDate());
+            productEntity.setImageUrl(productDto.getImageUrl());
+            CategoryEntity category = new ModelMapper().map(productDto.getCategory(),CategoryEntity.class);
+            productEntity.setCategory(category);
+
+            ProductEntity updatedProduct = productRepository.save(productEntity);
+            ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
+
+        return updatedProductDto;
+    }
 }
