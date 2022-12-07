@@ -1,14 +1,31 @@
 package com.pos.app.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pos.app.entity.ProductEntity;
 import com.pos.app.model.request.ProductRequestModel;
 import com.pos.app.model.response.ProductResponseModel;
+import com.pos.app.repository.ProductRepository;
+import com.pos.app.service.FileStorageService;
 import com.pos.app.service.ProductService;
 import com.pos.app.shared.dto.ProductDto;
+import com.pos.app.shared.utils.ImageUtility;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +35,13 @@ import java.util.List;
 public class ProductController {
     @Autowired
     private ProductService productService;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    FileStorageService storageService;
+
+    private String FILE_PATH_ROOT = "./uploads/";
 
     @PostMapping
     public ProductResponseModel saveProduct(@RequestBody ProductRequestModel productRequestModel){
@@ -45,6 +69,34 @@ public class ProductController {
         ProductDto updatedProduct = productService.updateProduct(id,productDto);
         ProductResponseModel responseModel = new ModelMapper().map(updatedProduct,ProductResponseModel.class);
         return responseModel;
+    }
+
+
+    @PostMapping("/upload")
+    public ProductResponseModel uploadFile(@RequestParam("image") MultipartFile file,@RequestParam("product") String productRequestModel) {
+        ProductRequestModel response;
+        try {
+            response = objectMapper.readValue(productRequestModel, ProductRequestModel.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        ModelMapper modelMapper = new ModelMapper();
+        ProductDto productDto = modelMapper.map(response, ProductDto.class);
+        ProductDto savedProduct = productService.saveProductWithImage(file,productDto);
+        ProductResponseModel responseModel = new ModelMapper().map(savedProduct, ProductResponseModel.class);
+        return responseModel;
+
+    }
+
+    @GetMapping("/{filename}")
+    public ResponseEntity<byte[]> getImage(@PathVariable("filename") String filename) {
+        byte[] image = new byte[0];
+        try {
+            image = FileUtils.readFileToByteArray(new File(FILE_PATH_ROOT+filename));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
     }
 
 

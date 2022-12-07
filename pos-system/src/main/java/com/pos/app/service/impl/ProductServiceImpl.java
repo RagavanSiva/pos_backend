@@ -1,10 +1,12 @@
 package com.pos.app.service.impl;
 
+import com.pos.app.controller.ProductController;
 import com.pos.app.entity.CategoryEntity;
 import com.pos.app.entity.ProductEntity;
 import com.pos.app.repository.CategoryRepository;
 import com.pos.app.repository.ProductRepository;
 import com.pos.app.service.CategoryService;
+import com.pos.app.service.FileStorageService;
 import com.pos.app.service.ProductService;
 import com.pos.app.shared.dto.CategoryDto;
 import com.pos.app.shared.dto.ProductDto;
@@ -12,6 +14,9 @@ import com.pos.app.shared.utils.Utils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +36,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private Utils utils;
 
+    @Autowired
+    private FileStorageService storageService;
+
     @Override
     public ProductDto saveProduct(ProductDto productDto) {
         ModelMapper modelMapper = new ModelMapper();
@@ -49,6 +57,8 @@ public class ProductServiceImpl implements ProductService {
         return returnValue;
 
     }
+
+
 
     @Override
     public List<ProductDto> getAllProducts(Long id,String name) {
@@ -103,4 +113,30 @@ public class ProductServiceImpl implements ProductService {
 
         return updatedProductDto;
     }
+
+    @Override
+    public ProductDto saveProductWithImage(MultipartFile file, ProductDto productDto) {
+
+
+        ModelMapper modelMapper = new ModelMapper();
+        ProductEntity checkProduct = productRepository.findByName(productDto.getName());
+        if (checkProduct != null) throw  new RuntimeException("Record Already Exists");
+
+        ProductEntity productEntity = modelMapper.map(productDto, ProductEntity.class);
+        storageService.save(file);
+        String publicProductId = utils.generateProductId(10);
+        productEntity.setProductId(publicProductId);
+        CategoryDto existingCategory = categoryService.getCategoryById(productDto.getCategory().getId());
+        CategoryEntity category = new ModelMapper().map(existingCategory,CategoryEntity.class);
+        productEntity.setCategory(category);
+        UriComponentsBuilder url = MvcUriComponentsBuilder
+                .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
+        productEntity.setImageUrl(url.toUriString());
+        ProductEntity savedProduct = productRepository.save(productEntity);
+        ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
+
+        return returnValue;
+
+    }
+
 }
