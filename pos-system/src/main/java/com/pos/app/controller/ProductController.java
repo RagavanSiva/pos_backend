@@ -4,14 +4,15 @@ import com.pos.app.model.request.ProductRequestModel;
 import com.pos.app.model.response.ProductResponseModel;
 import com.pos.app.service.ProductService;
 import com.pos.app.shared.dto.ProductDto;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("product")
 public class ProductController {

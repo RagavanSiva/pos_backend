@@ -10,4 +10,6 @@ public class PosSystemApplication {
 		SpringApplication.run(PosSystemApplication.class, args);
 	}
 
+
+
 }

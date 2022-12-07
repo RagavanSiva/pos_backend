@@ -24,7 +24,7 @@ public class ProductEntity implements Serializable {
     private double price;
     @Column(nullable = false)
     private LocalDate date;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private CategoryEntity category;
 }

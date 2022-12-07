@@ -13,5 +13,4 @@ public class ProductRequestModel {
     private LocalDate date;
     private CategoryRequestModel category;
 
-
 }
