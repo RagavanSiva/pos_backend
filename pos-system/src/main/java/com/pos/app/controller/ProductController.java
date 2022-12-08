@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +44,7 @@ public class ProductController {
 
     private String FILE_PATH_ROOT = "./uploads/";
 
-    @PostMapping
+    @PostMapping("/save")
     public ProductResponseModel saveProduct(@RequestBody ProductRequestModel productRequestModel){
         ModelMapper modelMapper = new ModelMapper();
         ProductDto productDto = modelMapper.map(productRequestModel,ProductDto.class);
@@ -63,7 +64,7 @@ public class ProductController {
 
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("save/{id}")
     public ProductResponseModel updateProduct(@PathVariable("id") String id ,@RequestBody ProductRequestModel productRequestModel){
         ProductDto productDto = new ModelMapper().map(productRequestModel,ProductDto.class);
         ProductDto updatedProduct = productService.updateProduct(id,productDto);
@@ -72,8 +73,27 @@ public class ProductController {
     }
 
 
-    @PostMapping("/upload")
+    @PostMapping
     public ProductResponseModel uploadFile(@RequestParam("image") MultipartFile file,@RequestParam("product") String productRequestModel) {
+        ProductRequestModel response;
+        try {
+            response = objectMapper.readValue(productRequestModel, ProductRequestModel.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        if (file.isEmpty()){
+            throw new RuntimeException("Image needed");
+        }
+        ModelMapper modelMapper = new ModelMapper();
+        ProductDto productDto = modelMapper.map(response, ProductDto.class);
+        ProductDto savedProduct = productService.saveProductWithImage(file,productDto);
+        ProductResponseModel responseModel = new ModelMapper().map(savedProduct, ProductResponseModel.class);
+        return responseModel;
+
+    }
+
+    @PutMapping("/{id}")
+    public ProductResponseModel updateProductWithFile(@PathVariable("id")String id, @Nullable @RequestParam(value = "image") MultipartFile file, @RequestParam("product") String productRequestModel) {
         ProductRequestModel response;
         try {
             response = objectMapper.readValue(productRequestModel, ProductRequestModel.class);
@@ -82,7 +102,7 @@ public class ProductController {
         }
         ModelMapper modelMapper = new ModelMapper();
         ProductDto productDto = modelMapper.map(response, ProductDto.class);
-        ProductDto savedProduct = productService.saveProductWithImage(file,productDto);
+        ProductDto savedProduct = productService.updateProductWithImage(id,file,productDto);
         ProductResponseModel responseModel = new ModelMapper().map(savedProduct, ProductResponseModel.class);
         return responseModel;
 

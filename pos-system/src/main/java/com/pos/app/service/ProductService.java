@@ -10,7 +10,7 @@ public interface ProductService {
     ProductDto saveProduct(ProductDto productDto);
 
     ProductDto saveProductWithImage(MultipartFile file , ProductDto productDto);
-
+    ProductDto updateProductWithImage(String id, MultipartFile file , ProductDto productDto);
     List<ProductDto> getAllProducts(Long id,String name);
 
     ProductDto updateProduct(String id, ProductDto productDto);

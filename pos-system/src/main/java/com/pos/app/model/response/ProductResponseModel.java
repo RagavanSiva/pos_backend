@@ -12,8 +12,6 @@ public class ProductResponseModel {
     private String name;
     private double price;
     private String imageUrl;
-    private String image;
-    private String type;
     private LocalDate date;
     private CategoryResponseModel category;
 }

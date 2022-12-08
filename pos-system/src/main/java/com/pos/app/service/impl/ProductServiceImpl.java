@@ -117,7 +117,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto saveProductWithImage(MultipartFile file, ProductDto productDto) {
 
-
         ModelMapper modelMapper = new ModelMapper();
         ProductEntity checkProduct = productRepository.findByName(productDto.getName());
         if (checkProduct != null) throw  new RuntimeException("Record Already Exists");
@@ -127,7 +126,7 @@ public class ProductServiceImpl implements ProductService {
         String publicProductId = utils.generateProductId(10);
         productEntity.setProductId(publicProductId);
         CategoryDto existingCategory = categoryService.getCategoryById(productDto.getCategory().getId());
-        CategoryEntity category = new ModelMapper().map(existingCategory,CategoryEntity.class);
+        CategoryEntity category = new ModelMapper().map(productDto.getCategory(),CategoryEntity.class);
         productEntity.setCategory(category);
         UriComponentsBuilder url = MvcUriComponentsBuilder
                 .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
@@ -136,6 +135,30 @@ public class ProductServiceImpl implements ProductService {
         ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
 
         return returnValue;
+
+    }
+
+    @Override
+    public ProductDto updateProductWithImage(String id, MultipartFile file, ProductDto productDto) {
+        ModelMapper modelMapper = new ModelMapper();
+
+        ProductEntity productEntity = productRepository.findByProductId(id);
+        if (productEntity == null) throw new RuntimeException("No Record Found");
+        productEntity.setName(productDto.getName());
+        productEntity.setDate(productDto.getDate());
+        CategoryEntity categoryEntity = categoryRepository.findById(productDto.getCategory().getId()).orElseThrow(()-> new RuntimeException("Category Not Exists"));
+
+        productEntity.setCategory(categoryEntity);
+        if (!file.isEmpty() && file != null){
+            storageService.save(file);
+            UriComponentsBuilder url = MvcUriComponentsBuilder
+                    .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
+            productEntity.setImageUrl(url.toUriString());
+        }
+        ProductEntity updatedProduct = productRepository.saveAndFlush(productEntity);
+        ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
+
+        return updatedProductDto;
 
     }
 

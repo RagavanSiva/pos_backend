@@ -28,7 +28,7 @@ public class ProductEntity implements Serializable {
     @Lob
     @Column(length=100000)
     private String imageUrl;
-    @Column(name = "image", unique = false,  length = 100000)
+    @Column(name = "image",  length = 100000)
     private String image;
     private String path;
     @Column(nullable = false)

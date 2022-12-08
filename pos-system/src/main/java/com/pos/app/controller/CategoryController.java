@@ -28,6 +28,14 @@ public class CategoryController {
         return  returnValue;
 
     }
+    @PutMapping("/{id}")
+    public CategoryResponseModel updateCategory(@PathVariable("id") Long id, @RequestBody CategoryRequestModel categoryRequestModel){
+        ModelMapper modelMapper = new ModelMapper();
+        CategoryDto categoryDto = modelMapper.map(categoryRequestModel,CategoryDto.class);
+        CategoryDto savedCategory = categoryService.updateCategory(id,categoryDto);
+        CategoryResponseModel returnValue = new ModelMapper().map(savedCategory, CategoryResponseModel.class);
+        return  returnValue;
+    }
 
     @GetMapping("/{id}")
     public CategoryResponseModel getCategoryById(@Nullable  @PathVariable("id") long id){
