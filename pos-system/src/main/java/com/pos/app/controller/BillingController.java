@@ -41,8 +41,8 @@ public class BillingController {
     }
 
     @GetMapping
-    public List<BillResponseModel> getAllBillDetails(@RequestParam(value = "date",required = false)String date){
-        List<BillDto> billDtos = billService.getBills(date);
+    public List<BillResponseModel> getAllBillDetails(@RequestParam(value = "startDate",required = false) String startDate ,@RequestParam(value = "endDate",required = false)String endDate){
+        List<BillDto> billDtos = billService.getBills(startDate,endDate);
         List<BillResponseModel> billResponseModels = new ArrayList<>();
         for (BillDto billDto : billDtos){
             billResponseModels.add(new ModelMapper().map(billDto,BillResponseModel.class));

@@ -9,5 +9,5 @@ public interface BillService {
 
     BillDto saveBill(BillDto billDto);
 
-    List<BillDto> getBills(String date);
+    List<BillDto> getBills(String startDate,String endDate);
 }

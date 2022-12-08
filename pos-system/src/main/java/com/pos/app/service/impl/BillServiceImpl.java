@@ -38,12 +38,19 @@ public class BillServiceImpl implements BillService {
     }
 
     @Override
-    public List<BillDto> getBills(String date) {
+    public List<BillDto> getBills(String startDate, String endDate) {
         List<BillEntity> billEntities = new ArrayList<>();
-        if (date != null) {
-            LocalDate localDate = LocalDate.parse(date);
-            billEntities = billRepository.findByDate(localDate);
-        }else{
+        if ((startDate != null && !startDate.isEmpty()) && (endDate != null && !endDate.isEmpty())) {
+            LocalDate StartDate = LocalDate.parse(startDate);
+            LocalDate EndDate = LocalDate.parse(endDate);
+            billEntities = billRepository.findByDateBetween(StartDate,EndDate);
+        } else if (startDate.isEmpty()) {
+            LocalDate EndDate = LocalDate.parse(endDate);
+            billEntities = billRepository.findByDate(EndDate);
+        } else if (endDate.isEmpty()) {
+            LocalDate StartDate = LocalDate.parse(startDate);
+            billEntities = billRepository.findByDate(StartDate);
+        } else{
            billEntities = billRepository.findAll();
         }
 

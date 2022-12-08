@@ -9,4 +9,5 @@ import java.util.List;
 public interface BillRepository extends JpaRepository<BillEntity, Long> {
 
     List<BillEntity> findByDate(LocalDate date);
+    List<BillEntity> findByDateBetween(LocalDate startDate,LocalDate endDate);
 }
