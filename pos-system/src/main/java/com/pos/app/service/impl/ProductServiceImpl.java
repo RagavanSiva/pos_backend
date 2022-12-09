@@ -7,8 +7,10 @@ import com.pos.app.repository.CategoryRepository;
 import com.pos.app.repository.ProductRepository;
 import com.pos.app.service.CategoryService;
 import com.pos.app.service.FileStorageService;
+import com.pos.app.service.PriceService;
 import com.pos.app.service.ProductService;
 import com.pos.app.shared.dto.CategoryDto;
+import com.pos.app.shared.dto.PriceDto;
 import com.pos.app.shared.dto.ProductDto;
 import com.pos.app.shared.utils.Utils;
 import org.modelmapper.ModelMapper;
@@ -39,6 +41,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private FileStorageService storageService;
 
+    @Autowired
+    private PriceService priceService;
+
     @Override
     public ProductDto saveProduct(ProductDto productDto) {
         ModelMapper modelMapper = new ModelMapper();
@@ -52,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
         CategoryEntity category = new ModelMapper().map(existingCategory,CategoryEntity.class);
         productEntity.setCategory(category);
         ProductEntity savedProduct = productRepository.save(productEntity);
+
         ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
 
         return returnValue;
@@ -108,6 +114,7 @@ public class ProductServiceImpl implements ProductService {
             CategoryEntity category = new ModelMapper().map(productDto.getCategory(),CategoryEntity.class);
             productEntity.setCategory(category);
 
+
             ProductEntity updatedProduct = productRepository.save(productEntity);
             ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
 
@@ -132,6 +139,12 @@ public class ProductServiceImpl implements ProductService {
                 .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
         productEntity.setImageUrl(url.toUriString());
         ProductEntity savedProduct = productRepository.save(productEntity);
+        PriceDto priceDto = new PriceDto();
+        priceDto.setProductId(savedProduct.getProductId());
+        priceDto.setDate(savedProduct.getDate());
+        priceDto.setPrice(savedProduct.getPrice());
+        PriceDto savedPrice = priceService.savePrice(priceDto);
+
         ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
 
         return returnValue;
@@ -144,8 +157,17 @@ public class ProductServiceImpl implements ProductService {
 
         ProductEntity productEntity = productRepository.findByProductId(id);
         if (productEntity == null) throw new RuntimeException("No Record Found");
+        PriceDto existingPriceDto = priceService.getPriceByProductIdAndPrice(productEntity.getProductId(),productEntity.getPrice());
+        if(existingPriceDto.getPrice() != productDto.getPrice()){
+            PriceDto priceDto = new PriceDto();
+            priceDto.setProductId(id);
+            priceDto.setDate(productDto.getDate());
+            priceDto.setPrice(productDto.getPrice());
+            priceService.savePrice(priceDto);
+        }
         productEntity.setName(productDto.getName());
         productEntity.setDate(productDto.getDate());
+        productEntity.setPrice(productDto.getPrice());
         CategoryEntity categoryEntity = categoryRepository.findById(productDto.getCategory().getId()).orElseThrow(()-> new RuntimeException("Category Not Exists"));
 
         productEntity.setCategory(categoryEntity);
@@ -155,7 +177,11 @@ public class ProductServiceImpl implements ProductService {
                     .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
             productEntity.setImageUrl(url.toUriString());
         }
+
         ProductEntity updatedProduct = productRepository.saveAndFlush(productEntity);
+
+
+
         ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
 
         return updatedProductDto;
