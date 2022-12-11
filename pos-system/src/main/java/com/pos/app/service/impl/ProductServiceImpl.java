@@ -48,26 +48,25 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto saveProduct(ProductDto productDto) {
         ModelMapper modelMapper = new ModelMapper();
         ProductEntity checkProduct = productRepository.findByName(productDto.getName());
-        if (checkProduct != null) throw  new RuntimeException("Record Already Exists");
+        if (checkProduct != null) throw new RuntimeException("Record Already Exists");
 
         ProductEntity productEntity = modelMapper.map(productDto, ProductEntity.class);
         String publicProductId = utils.generateProductId(10);
         productEntity.setProductId(publicProductId);
         CategoryDto existingCategory = categoryService.getCategoryById(productDto.getCategory().getId());
-        CategoryEntity category = new ModelMapper().map(existingCategory,CategoryEntity.class);
+        CategoryEntity category = new ModelMapper().map(existingCategory, CategoryEntity.class);
         productEntity.setCategory(category);
         ProductEntity savedProduct = productRepository.save(productEntity);
 
-        ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
+        ProductDto returnValue = new ModelMapper().map(savedProduct, ProductDto.class);
 
         return returnValue;
 
     }
 
 
-
     @Override
-    public List<ProductDto> getAllProducts(Long id,String name) {
+    public List<ProductDto> getAllProducts(Long id, String name) {
         List<ProductEntity> products = new ArrayList<>();
 //        if(id != null) {
 //            CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not exits"));
@@ -81,42 +80,39 @@ public class ProductServiceImpl implements ProductService {
 //
 //        }
 
-        if(!name.isEmpty()  && id != null){
+        if (!name.isEmpty() && id != null) {
             CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not exits"));
-            products = productRepository.findByNameContainingAndCategory(name,category);
-        }
-        else if(id == null  ){
-            products =  productRepository.findByNameContaining(name);
-        }
-        else if( name.isEmpty()  ){
+            products = productRepository.findByNameContainingAndCategory(name, category);
+        } else if (id == null) {
+            products = productRepository.findByNameContaining(name);
+        } else if (name.isEmpty()) {
             CategoryEntity category = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not exits"));
-            products =  productRepository.findByCategory(category);
-        }
-        else {
+            products = productRepository.findByCategory(category);
+        } else {
             products = productRepository.findAll();
         }
 
-        if(products.isEmpty()) throw new RuntimeException("No Data");
+        if (products.isEmpty()) throw new RuntimeException("No Data");
         List<ProductDto> productDtoList = new ArrayList<>();
-        for (ProductEntity productEntity : products){
-            productDtoList.add(new ModelMapper().map(productEntity,ProductDto.class));
+        for (ProductEntity productEntity : products) {
+            productDtoList.add(new ModelMapper().map(productEntity, ProductDto.class));
         }
         return productDtoList;
     }
 
     @Override
     public ProductDto updateProduct(String id, ProductDto productDto) {
-            ProductEntity productEntity = productRepository.findByProductId(id);
-            if (productEntity == null) throw new RuntimeException("No Record Found");
-            productEntity.setName(productDto.getName());
-            productEntity.setDate(productDto.getDate());
-            productEntity.setImageUrl(productDto.getImageUrl());
-            CategoryEntity category = new ModelMapper().map(productDto.getCategory(),CategoryEntity.class);
-            productEntity.setCategory(category);
+        ProductEntity productEntity = productRepository.findByProductId(id);
+        if (productEntity == null) throw new RuntimeException("No Record Found");
+        productEntity.setName(productDto.getName());
+        productEntity.setDate(productDto.getDate());
+        productEntity.setImageUrl(productDto.getImageUrl());
+        CategoryEntity category = new ModelMapper().map(productDto.getCategory(), CategoryEntity.class);
+        productEntity.setCategory(category);
 
 
-            ProductEntity updatedProduct = productRepository.save(productEntity);
-            ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
+        ProductEntity updatedProduct = productRepository.save(productEntity);
+        ProductDto updatedProductDto = new ModelMapper().map(updatedProduct, ProductDto.class);
 
         return updatedProductDto;
     }
@@ -126,14 +122,14 @@ public class ProductServiceImpl implements ProductService {
 
         ModelMapper modelMapper = new ModelMapper();
         ProductEntity checkProduct = productRepository.findByName(productDto.getName());
-        if (checkProduct != null) throw  new RuntimeException("Record Already Exists");
+        if (checkProduct != null) throw new RuntimeException("Record Already Exists");
 
         ProductEntity productEntity = modelMapper.map(productDto, ProductEntity.class);
         storageService.save(file);
         String publicProductId = utils.generateProductId(10);
         productEntity.setProductId(publicProductId);
         CategoryDto existingCategory = categoryService.getCategoryById(productDto.getCategory().getId());
-        CategoryEntity category = new ModelMapper().map(productDto.getCategory(),CategoryEntity.class);
+        CategoryEntity category = new ModelMapper().map(productDto.getCategory(), CategoryEntity.class);
         productEntity.setCategory(category);
         UriComponentsBuilder url = MvcUriComponentsBuilder
                 .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
@@ -145,7 +141,7 @@ public class ProductServiceImpl implements ProductService {
         priceDto.setPrice(savedProduct.getPrice());
         PriceDto savedPrice = priceService.savePrice(priceDto);
 
-        ProductDto returnValue = new ModelMapper().map(savedProduct,ProductDto.class);
+        ProductDto returnValue = new ModelMapper().map(savedProduct, ProductDto.class);
 
         return returnValue;
 
@@ -157,8 +153,8 @@ public class ProductServiceImpl implements ProductService {
 
         ProductEntity productEntity = productRepository.findByProductId(id);
         if (productEntity == null) throw new RuntimeException("No Record Found");
-        PriceDto existingPriceDto = priceService.getPriceByProductIdAndPrice(productEntity.getProductId(),productEntity.getPrice());
-        if(existingPriceDto.getPrice() != productDto.getPrice()){
+        PriceDto existingPriceDto = priceService.getPriceByProductIdAndPrice(productEntity.getProductId(), productEntity.getPrice());
+        if (existingPriceDto.getPrice() != productDto.getPrice()) {
             PriceDto priceDto = new PriceDto();
             priceDto.setProductId(id);
             priceDto.setDate(productDto.getDate());
@@ -168,22 +164,16 @@ public class ProductServiceImpl implements ProductService {
         productEntity.setName(productDto.getName());
         productEntity.setDate(productDto.getDate());
         productEntity.setPrice(productDto.getPrice());
-        CategoryEntity categoryEntity = categoryRepository.findById(productDto.getCategory().getId()).orElseThrow(()-> new RuntimeException("Category Not Exists"));
-
+        CategoryEntity categoryEntity = categoryRepository.findById(productDto.getCategory().getId()).orElseThrow(() -> new RuntimeException("Category Not Exists"));
         productEntity.setCategory(categoryEntity);
-        if (!file.isEmpty() && file != null){
+        if ( file != null) {
             storageService.save(file);
             UriComponentsBuilder url = MvcUriComponentsBuilder
                     .fromMethodName(ProductController.class, "getImage", file.getOriginalFilename());
             productEntity.setImageUrl(url.toUriString());
         }
-
         ProductEntity updatedProduct = productRepository.saveAndFlush(productEntity);
-
-
-
-        ProductDto updatedProductDto = new ModelMapper().map(updatedProduct,ProductDto.class);
-
+        ProductDto updatedProductDto = new ModelMapper().map(updatedProduct, ProductDto.class);
         return updatedProductDto;
 
     }

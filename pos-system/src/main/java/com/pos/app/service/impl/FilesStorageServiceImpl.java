@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class FilesStorageServiceImpl implements FileStorageService {
 
     private final Path root = Paths.get("uploads");
-    private String FILE_PATH_ROOT = "/opt/javatodev/images/";
     @Override
     public void init() {
         try {
